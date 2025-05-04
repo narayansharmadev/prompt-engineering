@@ -1,0 +1,384 @@
+{
+  "tools": [
+    {
+      "name": "restart_workflow",
+      "description": "Start or restart a given workflow by name.",
+      "parameters": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The exact name of the workflow to start or restart."
+          }
+        }
+      }
+    },
+    {
+      "name": "search_filesystem",
+      "description": "Locate and open relevant files in the codebase based on names, code snippets, or a natural language query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "class_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Exact class names to look for (case-sensitive). Useful for finding class definitions or references."
+          },
+          "function_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Exact function or method names to search (case-sensitive)."
+          },
+          "code": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Complete code fragments to find in the codebase (not just keywords)."
+          },
+          "query_description": {
+            "anyOf": [
+              { "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "description": "A plain-English query for semantic search, e.g. \"find database connection error handling\"."
+          }
+        }
+      }
+    },
+    {
+      "name": "packager_tool",
+      "description": "Manage project dependencies: install or remove libraries or system packages and initialise config files if missing.",
+      "parameters": {
+        "type": "object",
+        "required": ["install_or_uninstall", "language_or_system"],
+        "properties": {
+          "install_or_uninstall": {
+            "type": "string",
+            "enum": ["install", "uninstall"],
+            "description": "Choose whether to install or remove the listed dependencies."
+          },
+          "language_or_system": {
+            "type": "string",
+            "description": "Specify the package manager or system (e.g. \"nodejs\", \"python\", or \"system\")."
+          },
+          "dependency_list": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Names of packages to install or remove. For system tools, use Nixpkgs names like \"jq\"; for language libs, use names like \"express\"."
+          }
+        }
+      }
+    },
+    {
+      "name": "programming_language_install_tool",
+      "description": "Install required programming languages and their package managers (e.g. Python 3.11, Node.js 20).",
+      "parameters": {
+        "type": "object",
+        "required": ["programming_languages"],
+        "properties": {
+          "programming_languages": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of language identifiers to install, e.g. [\"python-3.10\", \"nodejs-20\"]."
+          }
+        }
+      }
+    },
+    {
+      "name": "create_postgresql_database_tool",
+      "description": "Create a new PostgreSQL database and set environment variables: DATABASE_URL, PGPORT, PGUSER, PGPASSWORD, PGDATABASE, PGHOST.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "check_database_status",
+      "description": "Verify accessibility and connection status of the configured databases.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "str_replace_editor",
+      "description": "View, create or edit files by replacing, inserting or undoing text edits. Supports viewing directories and files with line-number context.",
+      "parameters": {
+        "type": "object",
+        "required": ["command", "path"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "enum": ["view", "create", "str_replace", "insert", "undo_edit"],
+            "description": "Operation to perform: view, create, string-replace, insert, or undo last edit."
+          },
+          "path": {
+            "type": "string",
+            "description": "Absolute file or directory path, e.g. \"/repo/src/app.py\" or \"/repo/\"."
+          },
+          "view_range": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "For view on files: [startLine, endLine], 1-based. Use -1 as end to show to file end."
+          },
+          "file_text": {
+            "type": "string",
+            "description": "Content for create command."
+          },
+          "insert_line": {
+            "type": "integer",
+            "description": "Line number after which to insert new text."
+          },
+          "old_str": {
+            "type": "string",
+            "description": "Exact existing text block to replace (for str_replace)."
+          },
+          "new_str": {
+            "type": "string",
+            "description": "Text to replace old_str or to insert."
+          }
+        }
+      }
+    },
+    {
+      "name": "bash",
+      "description": "Execute shell commands persistently. Long-running tasks can run in background; use pipes to avoid pagers.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The shell command to run."
+          },
+          "restart": {
+            "type": "boolean",
+            "description": "Set true to restart this shell session."
+          }
+        }
+      }
+    },
+    {
+      "name": "workflows_set_run_config_tool",
+      "description": "Configure and launch background tasks (e.g. development servers) by name, command, and optional port wait.",
+      "parameters": {
+        "type": "object",
+        "required": ["name", "command"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique identifier for this task."
+          },
+          "command": {
+            "type": "string",
+            "description": "Shell command to run in background."
+          },
+          "wait_for_port": {
+            "anyOf": [
+              { "type": "integer" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "description": "Port to wait for before marking the task as ready."
+          }
+        }
+      }
+    },
+    {
+      "name": "workflows_remove_run_config_tool",
+      "description": "Stop and remove a previously configured background task by its name.",
+      "parameters": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the task to remove."
+          }
+        }
+      }
+    },
+    {
+      "name": "execute_sql_tool",
+      "description": "Run SQL queries for database inspection, troubleshooting or data manipulation. Favours SQL over code-based fixes.",
+      "parameters": {
+        "type": "object",
+        "required": ["sql_query"],
+        "properties": {
+          "sql_query": {
+            "type": "string",
+            "description": "The SQL statement to execute."
+          }
+        }
+      }
+    },
+    {
+      "name": "suggest_deploy",
+      "description": "Signal that the project is ready for deployment and suggest the user trigger Replit’s deployment flow.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "report_progress",
+      "description": "After user confirmation, document completed milestones with a brief summary and prompt for next steps.",
+      "parameters": {
+        "type": "object",
+        "required": ["summary"],
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Concise list of accomplishments (✓ done, → in progress), up to 5 items, in user’s language."
+          }
+        }
+      }
+    },
+    {
+      "name": "web_application_feedback_tool",
+      "description": "Capture a screenshot and console logs to confirm if the web app is running and solicit one clear user question or confirmation.",
+      "parameters": {
+        "type": "object",
+        "required": ["query", "workflow_name"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "One simple question to ask the user about the running app."
+          },
+          "website_route": {
+            "anyOf": [
+              { "type": "string" },
+              { "type": "null" }
+            ],
+            "default": null,
+            "description": "Specific URL path (with leading slash) if not root."
+          },
+          "workflow_name": {
+            "type": "string",
+            "description": "Name of the running workflow to inspect."
+          }
+        }
+      }
+    },
+    {
+      "name": "shell_command_application_feedback_tool",
+      "description": "Run an interactive shell command and ask the user one question about its behaviour or output.",
+      "parameters": {
+        "type": "object",
+        "required": ["query", "shell_command", "workflow_name"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Feedback question about the interactive CLI session."
+          },
+          "shell_command": {
+            "type": "string",
+            "description": "Exact command to run interactively."
+          },
+          "workflow_name": {
+            "type": "string",
+            "description": "Associated workflow name."
+          }
+        }
+      }
+    },
+    {
+      "name": "vnc_window_application_feedback",
+      "description": "Launch and display a desktop app over VNC, then ask one question about its behaviour.",
+      "parameters": {
+        "type": "object",
+        "required": ["query", "vnc_execution_command", "workflow_name"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Question about the desktop app’s behaviour."
+          },
+          "vnc_execution_command": {
+            "type": "string",
+            "description": "Command that opens the app in VNC mode."
+          },
+          "workflow_name": {
+            "type": "string",
+            "description": "Name of the VNC workflow."
+          }
+        }
+      }
+    },
+    {
+      "name": "ask_secrets",
+      "description": "Request the user’s secret keys (e.g., API tokens) and explain why each is needed, phrasing the prompt respectfully.",
+      "parameters": {
+        "type": "object",
+        "required": ["secret_keys", "user_message"],
+        "properties": {
+          "secret_keys": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Identifiers of required secrets, e.g. [\"OPENAI_API_KEY\"]."
+          },
+          "user_message": {
+            "type": "string",
+            "description": "Respectful explanation to the user about why these keys are needed."
+          }
+        }
+      }
+    },
+    {
+      "name": "check_secrets",
+      "description": "Verify presence of specified environment secrets without revealing their values.",
+      "parameters": {
+        "type": "object",
+        "required": ["secret_keys"],
+        "properties": {
+          "secret_keys": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of secret names to check."
+          }
+        }
+      }
+    }
+  ],
+  "internal_tags": [
+    {
+      "name": "View",
+      "description": "Repository structure and file listings"
+    },
+    {
+      "name": "policy_spec",
+      "description": "Communication, proactiveness and integrity policies"
+    },
+    {
+      "name": "file_system",
+      "description": "Directory contents"
+    },
+    {
+      "name": "repo_overview",
+      "description": "Code summaries and architecture"
+    },
+    {
+      "name": "important",
+      "description": "Critical policy reminders"
+    },
+    {
+      "name": "workflow_console_logs",
+      "description": "Logs from Replit workflows"
+    },
+    {
+      "name": "automatic_updates",
+      "description": "System-generated environment updates"
+    },
+    {
+      "name": "webview_console_logs",
+      "description": "Errors and logs from the browser view"
+    },
+    {
+      "name": "function_results",
+      "description": "Outputs of tool invocations"
+    }
+  ]
+}
